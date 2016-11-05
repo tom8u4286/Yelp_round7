@@ -6,11 +6,11 @@ plot/yelp_minor/sentiment_analysis_plot.png
 #CoreProcess.py
 #CrawlerSetup.sh
 #Glove.py
-LexiconMaker-negative.py
-LexiconMaker.py
-MenuCrawler.py
-MenuMerger.py
-MenuSpliter.py
+#LexiconMaker-negative.py
+#LexiconMaker.py
+#MenuCrawler.py
+#MenuMerger.py
+#MenuSpliter.py
 Pca.py
 PostProcess.py
 Preprocess.py
