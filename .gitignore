@@ -23,7 +23,7 @@ plot/yelp_minor/sentiment_analysis_plot.png
 #Tsne.py
 #Word2Vec.py
 #plot/ScoreTest/ScoreTest.py
-plot/ScoreTest/dishes_list.json
+#plot/ScoreTest/dishes_list.json
 #plot/google_pre_and_yelp_corpus_test_plot/sentiment_analysis_plot.py
 #plot/google_pre_vec_sentiment_plot/google_pre_vec_sentiment_plot.py
 #plot/restaurant_test/restaurant_test.py
