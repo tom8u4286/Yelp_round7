@@ -3,9 +3,9 @@ GoogleNews-vectors-negative300.bin
 plot/google_pre_and_yelp_corpus_test_plot/sentiment_words(Google_pretrained_and_yelp_corpus).png
 plot/google_pre_vec_sentiment_plot/google_pre_sentiment.png
 plot/yelp_minor/sentiment_analysis_plot.png
-CoreProcess.py
-CrawlerSetup.sh
-Glove.py
+#CoreProcess.py
+#CrawlerSetup.sh
+#Glove.py
 LexiconMaker-negative.py
 LexiconMaker.py
 MenuCrawler.py
