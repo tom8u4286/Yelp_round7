@@ -255,7 +255,7 @@ class StarRepresentationTest:
             for j in xrange(len(dishes_regex)):
                 backend_reviews[i]["text"] = backend_reviews[i]["text"].lower()
                 """ Replacement | E.g. I love country pate. -> I love housemade-country-pate_mon-ami-gabi. """
-                backend_reviews[i]["text"] = re.sub(dishes_regex[j], backend_reviews[i]["review_stars"]*"*", backend_reviews[i]["text"], flags = re.IGNORECASE)
+                backend_reviews[i]["text"] = re.sub(dishes_regex[j], int(backend_reviews[i]["review_stars"])*"*", backend_reviews[i]["text"], flags = re.IGNORECASE)
                 backend_reviews[i]["text"] = re.sub("(\s)+", r" ", backend_reviews[i]["text"])
 
                 if self.switch:
@@ -283,7 +283,7 @@ class StarRepresentationTest:
         for dish in dishes_ar:
             cnt += 1
             for review in self.backend_reviews:
-                count += review.count(dish)
+                count += review["text"].count(dish)
             count_list.append(count)
             count = 0
 
@@ -412,7 +412,7 @@ class StarRepresentationTest:
         """ (2) render restaurant_*.json in ./backend_reviews """
         backend_txt = open("../../data/backend_reviews_dish_change_to_stars/restaurant_%s.txt"%(filename), "w+")
         for review in self.backend_reviews:
-            backend_txt.write(review.encode("utf-8") + '\n')
+            backend_txt.write(review["text"].encode("utf-8") + '\n')
         backend_txt.close()
 
         print sys.argv[1], "'s backend json is completed"
