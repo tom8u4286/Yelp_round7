@@ -32,9 +32,13 @@ class ReviewClassifierWithStars:
 
     def create_folder(self):
         """ create directory if not found """
-        directory = os.path.dirname("../../data/reviews_each_with_stars")
+        print "Creating directory if not found..."
+        directory = os.path.dirname("../../data/reviews_each_with_stars/")
         if not os.path.exists(directory):
+            print "Creating directory..."
             os.makedirs(directory)
+        else:
+                print "Exist already!"
 
     def classify(self):
 
@@ -45,10 +49,10 @@ class ReviewClassifierWithStars:
         length = len(business_list)
         #fi = open("../../data/business_list.json","r")
 
-        cnt = 0
+        cnt = 1
         for business in business_list:
 
-            f = open("../../data/reviews_each_with_stars/restaurant_%s.json"%(cnt+1), "w+")
+            f = open("../../data/reviews_each_with_stars/restaurant_%s.json"%(cnt), "w+")
             print "Status,", cnt, "/", length, "Sorting reviews in that match business_id",  business["business_id"], "into:", business["business_name"]
 
             reviews_list = []
@@ -64,10 +68,12 @@ class ReviewClassifierWithStars:
             ordered_dict["index"] = cnt
             ordered_dict["business_id"] = business["business_id"]
             ordered_dict["business_name"] = business["business_name"]
-            ordered_dict["reviews"] = review_list
+            ordered_dict["reviews"] = reviews_list
 
             f.write(json.dumps(ordered_dict, indent=4))
             f.close()
+            cnt +=1
+
         print "Done"
 
 if __name__ == '__main__':
