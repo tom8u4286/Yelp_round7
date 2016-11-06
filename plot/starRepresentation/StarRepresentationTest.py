@@ -2,7 +2,7 @@
 import sys, re, json, os, uuid, itertools
 from operator import itemgetter
 from collections import OrderedDict
-import SpellingChecker #self defined
+#import SpellingChecker #self defined
 import unicodedata
 
 class StarRepresentationTest:
@@ -12,7 +12,7 @@ class StarRepresentationTest:
         self.src = sys.argv[1]  # E.g. data/reviews/restaurant_3.json
 
         "menu is in business_list.json"
-        self.src_b = '../data/business_list.json'
+        self.src_b = '../../data/business_list.json'
 
         self.backend_reviews = []
         self.frontend_reviews = []
@@ -134,7 +134,9 @@ class StarRepresentationTest:
 
     def get_clean_reviews(self):
         """ clean reviews """
-        raw_reviews = self.get_review_dict()["reviews"]
+        raw_reviews = self.get_review_dict()
+        print "cleaning reviews"
+        print type(raw_reviews)
 
         if self.switch:
             print "Cleaning reviews"
@@ -142,9 +144,11 @@ class StarRepresentationTest:
         cnt = 0
         length = len(raw_reviews)
         clean_reviews = []
-        for text in raw_reviews:
+        for review in raw_reviews["reviews"]:
             cnt += 1
             #text = text.decode("utf-8").encode('ascii', 'ignore')
+
+            text = review["text"]
 
             text = re.sub(r'https?:\/\/.*[\r\n]*', ' ', text, flags=re.MULTILINE)
             #text = ' '.join(re.findall('[A-Z][^A-Z]*', text)) # ThisIsAwesome -> This Is Awesome
@@ -177,7 +181,8 @@ class StarRepresentationTest:
 
             text = ''.join(''.join(s)[:2] for _, s in itertools.groupby(text)) # sooo happppppy -> so happy
             #text = ' '.join(SpellingChecker.correction(word) for word in text.split())
-            clean_reviews.append(text)
+            review["text"] = text
+            clean_reviews.append(review)
 
             if self.switch:
                 sys.stdout.write("\rStatus: %s / %s"%(cnt, length))
@@ -248,10 +253,10 @@ class StarRepresentationTest:
         for i in xrange(len(backend_reviews)):
             length2 = len(dishes_regex)
             for j in xrange(len(dishes_regex)):
-                backend_reviews[i] = backend_reviews[i].lower()
+                backend_reviews[i]["text"] = backend_reviews[i]["text"].lower()
                 """ Replacement | E.g. I love country pate. -> I love housemade-country-pate_mon-ami-gabi. """
-                backend_reviews[i] = re.sub(dishes_regex[j], dishes_ar[j], backend_reviews[i], flags = re.IGNORECASE)
-                backend_reviews[i] = re.sub("(\s)+", r" ", backend_reviews[i])
+                backend_reviews[i]["text"] = re.sub(dishes_regex[j], backend_reviews[i]["review_stars"]*"*", backend_reviews[i]["text"], flags = re.IGNORECASE)
+                backend_reviews[i]["text"] = re.sub("(\s)+", r" ", backend_reviews[i]["text"])
 
                 if self.switch:
                     sys.stdout.write("\rStatus: %s / %s | %s / %s"%(i+1, length1, j+1, length2))
@@ -347,20 +352,13 @@ class StarRepresentationTest:
 
     def create_dirs(self):
         """ create the directory if not exist"""
-        dir1 = os.path.dirname("data/backend_reviews/")
-        dir2 = os.path.dirname("data/frontend_reviews/")
-        dir3 = os.path.dirname("data/restaurant_dict_list/")
-        dir4 = os.path.dirname("data/sentiment_statistics/")
+        dir1= os.path.dirname("../../data/backend_reviews_dish_change_to_stars/")
 
         if not os.path.exists(dir1):
+            print "creating dir"
             os.makedirs(dir1)
-        if not os.path.exists(dir2):
-            os.makedirs(dir2)
-        if not os.path.exists(dir3):
-            os.makedirs(dir3)
-        if not os.path.exists(dir4):
-            os.makedirs(dir4)
-
+        else:
+            print "dir exists"
     def render(self):
         """ render frontend_review & backend_reviews & restaurant_list """
         business = self.get_business()
@@ -372,7 +370,7 @@ class StarRepresentationTest:
         restaurant_dict = self.get_restaurant_dict()
         #sentiment_statistics = self.get_statistics()
 
-        #self.create_dirs()
+        self.create_dirs()
 
         if self.switch:
             print "\n" + "-"*70
@@ -386,7 +384,7 @@ class StarRepresentationTest:
 
         total_review_count = len(self.clean_reviews)
         """ (1) render restaurant_*.json in ./frontend_reviews """
-
+        """
         orderedDict1 = OrderedDict()
         orderedDict1["restaurant_name"] = business["business_name"]
         orderedDict1["restaurant_id"] = business["business_id"]
@@ -410,40 +408,16 @@ class StarRepresentationTest:
         frontend_json.close()
 
         print sys.argv[1], "'s frontend json is completed"
-
+        """
         """ (2) render restaurant_*.json in ./backend_reviews """
-        backend_txt = open("data/backend_reviews/restaurant_%s.txt"%(filename), "w+")
+        backend_txt = open("../../data/backend_reviews_dish_change_to_stars/restaurant_%s.txt"%(filename), "w+")
         for review in self.backend_reviews:
             backend_txt.write(review.encode("utf-8") + '\n')
         backend_txt.close()
 
         print sys.argv[1], "'s backend json is completed"
 
-        """ (3) render restaurant_dict, in which menu is transformded from a list to a detailed dictionary """
 
-        orderedDict2 = OrderedDict()
-        orderedDict2["restaurant_name"] = restaurant_dict["business_name"]
-        orderedDict2["restaurant_id"] = restaurant_dict["business_id"]
-        orderedDict2["stars"] = restaurant_dict["stars"]
-        orderedDict2["review_count"] = total_review_count
-        orderedDict2["menu_length"] = restaurant_dict["menu_length"]
-        orderedDict2["menu"] = restaurant_dict["menu"]
-
-        #dish_list = sorted(dish_list, key=lambda k: k['count'])
-
-        restaurant_json = open("data/restaurant_dict_list/restaurant_dict_%s.json"%(filename), "w+")
-        restaurant_json.write(json.dumps( orderedDict2, indent = 4, cls=NoIndentEncoder))
-        restaurant_json.close()
-
-        print sys.argv[1], "'s restaurant_dic json is completed"
-
-        """ (4) render restaurant.json containing dictionaries of each positive sentiment word """
-
-        restaurant_json = open("data/sentiment_statistics/restaurant_%s.json"%(filename), "w+")
-        restaurant_json.write(json.dumps(sentiment_statistics, indent = 4, cls=NoIndentEncoder))
-        restaurant_json.close()
-
-        print sys.argv[1], "'s sentiment analysis is completed"
 
 class NoIndent(object):
     def __init__(self, value):
@@ -471,5 +445,5 @@ class NoIndentEncoder(json.JSONEncoder):
         return result
 
 if  __name__ == '__main__':
-    parser = ReviewParser()
+    parser = StarRepresentationTest()
     parser.render()
