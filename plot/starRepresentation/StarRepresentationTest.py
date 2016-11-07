@@ -357,18 +357,14 @@ class StarRepresentationTest:
         if not os.path.exists(dir1):
             print "creating dir"
             os.makedirs(dir1)
-        else:
-            print "dir exists"
-    def render(self):
-        """ render frontend_review & backend_reviews & restaurant_list """
-        business = self.get_business()
-        #self.menu = self.get_clean_menu()
-        self.clean_reviews = self.get_clean_reviews()
-        #self.frontend_review_dict_list = self.get_frontend_review_dict_list()
-        self.backend_reviews = self.get_backend_reviews()
 
+    def render(self):
+        """ render backend_reviews_dish_change_to_stars"""
+
+        business = self.get_business()
+        self.clean_reviews = self.get_clean_reviews()
+        self.backend_reviews = self.get_backend_reviews()
         restaurant_dict = self.get_restaurant_dict()
-        #sentiment_statistics = self.get_statistics()
 
         self.create_dirs()
 
@@ -376,40 +372,15 @@ class StarRepresentationTest:
             print "\n" + "-"*70
             print "Rendering"
 
-        filename = sys.argv[1][24]
-        if sys.argv[1][25] != ".":
-            filename = filename + sys.argv[1][25]
-            if sys.argv[1][26] != ".":
-                filename = filename + sys.argv[1][26]
+        filename = sys.argv[1][40]
+        if sys.argv[1][41] != ".":
+            filename = filename + sys.argv[1][41]
+            if sys.argv[1][42] != ".":
+                filename = filename + sys.argv[1][42]
 
         total_review_count = len(self.clean_reviews)
-        """ (1) render restaurant_*.json in ./frontend_reviews """
-        """
-        orderedDict1 = OrderedDict()
-        orderedDict1["restaurant_name"] = business["business_name"]
-        orderedDict1["restaurant_id"] = business["business_id"]
-        orderedDict1["stars"] = business["stars"]
-        orderedDict1["total_review_count"] = total_review_count
 
-        ordered_frontend_review_dict_list = []
-        dish_cnt = 0
-        for review_dict in self.frontend_review_dict_list:
-            dish_cnt += 1
-            tmp_ordered_dict = OrderedDict()
-            tmp_ordered_dict['dish_index'] = dish_cnt
-            tmp_ordered_dict['dish_name'] = review_dict["dish_name"]
-            tmp_ordered_dict['reviews'] = review_dict["reviews"]
-            ordered_frontend_review_dict_list.append(tmp_ordered_dict)
-
-        orderedDict1["dish_reviews"] = ordered_frontend_review_dict_list
-
-        frontend_json = open("data/frontend_reviews/restaurant_%s.json"%(filename), "w+")
-        frontend_json.write(json.dumps( orderedDict1, indent = 4))
-        frontend_json.close()
-
-        print sys.argv[1], "'s frontend json is completed"
-        """
-        """ (2) render restaurant_*.json in ./backend_reviews """
+        """ render restaurant_*.json in ./backend_reviews_dish_change_to_stars """
         backend_txt = open("../../data/backend_reviews_dish_change_to_stars/restaurant_%s.txt"%(filename), "w+")
         for review in self.backend_reviews:
             backend_txt.write(review["text"].encode("utf-8") + '\n')

@@ -1,6 +1,6 @@
 #!/bin/zsh
 
-for i in data/reviews/*.json
+for i in ../../data/reviews_each_with_stars/*.json
 do
     ts -n -f sh -c "python StarRepresentationTest.py $i" &
 done
