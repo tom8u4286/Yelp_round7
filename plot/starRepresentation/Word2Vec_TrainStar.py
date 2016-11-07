@@ -57,7 +57,6 @@ class Word2Vec:
         print "Running Word2Vec"
         model = gensim.models.Word2Vec(sentences, min_count=3, size=300, window = 10, workers=4)
         model.train(sentences)
-        model.intersect_word2vec_format("GoogleNews-vectors-negative300.bin",binary=True)
         unique_words = list(model.vocab.keys())
 
         vectors300 = []
