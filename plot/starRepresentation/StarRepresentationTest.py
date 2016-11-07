@@ -129,29 +129,24 @@ class StarRepresentationTest:
                 sys.stdout.write("\rStatus: %s / %s"%(cnt, length))
                 sys.stdout.flush()
 
-        #print marked_dishes
         return marked_dishes
 
     def get_clean_reviews(self):
         """ clean reviews """
         raw_reviews = self.get_review_dict()
-        print "cleaning reviews"
-        print type(raw_reviews)
 
         if self.switch:
             print "Cleaning reviews"
-
         cnt = 0
         length = len(raw_reviews)
         clean_reviews = []
         for review in raw_reviews["reviews"]:
             cnt += 1
-            #text = text.decode("utf-8").encode('ascii', 'ignore')
 
             text = review["text"]
 
             text = re.sub(r'https?:\/\/.*[\r\n]*', ' ', text, flags=re.MULTILINE)
-            #text = ' '.join(re.findall('[A-Z][^A-Z]*', text)) # ThisIsAwesome -> This Is Awesome
+
             text = text.replace("!"," ! ").replace("@"," @ ").replace("#"," # ").replace("$"," $ ").replace("%"," % ")
             text = text.replace("^"," ^ ").replace("&"," & ").replace("*"," * ").replace("("," ( ").replace(")"," ) ")
             text = text.replace(":"," : ").replace(";"," ; ").replace("."," . ").replace(","," , ").replace("=", " = ")
@@ -372,11 +367,11 @@ class StarRepresentationTest:
             print "\n" + "-"*70
             print "Rendering"
 
-        filename = sys.argv[1][40]
-        if sys.argv[1][41] != ".":
-            filename = filename + sys.argv[1][41]
-            if sys.argv[1][42] != ".":
-                filename = filename + sys.argv[1][42]
+        filename = sys.argv[1][46]
+        if sys.argv[1][47] != ".":
+            filename = filename + sys.argv[1][47]
+            if sys.argv[1][48] != ".":
+                filename = filename + sys.argv[1][48]
 
         total_review_count = len(self.clean_reviews)
 
