@@ -250,7 +250,7 @@ class StarRepresentationTest:
             for j in xrange(len(dishes_regex)):
                 backend_reviews[i]["text"] = backend_reviews[i]["text"].lower()
                 """ Replacement | E.g. I love country pate. -> I love housemade-country-pate_mon-ami-gabi. """
-                backend_reviews[i]["text"] = re.sub(dishes_regex[j], int(backend_reviews[i]["review_stars"])*"*", backend_reviews[i]["text"], flags = re.IGNORECASE)
+                backend_reviews[i]["text"] = re.sub(dishes_regex[j], str(backend_reviews[i]["review_stars"])+"stars", backend_reviews[i]["text"], flags = re.IGNORECASE)
                 backend_reviews[i]["text"] = re.sub("(\s)+", r" ", backend_reviews[i]["text"])
 
                 if self.switch:
