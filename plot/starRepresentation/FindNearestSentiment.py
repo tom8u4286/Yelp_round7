@@ -52,11 +52,11 @@ class FindNearestSentiment:
         four_array = cos_array[four]
         five_array = cos_array[five]
 
-        np.argsort(one_array)[-10:]
-        np.argsort(two_array)[-10:]
-        np.argsort(three_array)[-10:]
-        np.argsort(four_array)[-10:]
-        np.argsort(five_array)[-10:]
+        print np.argsort(one_array)[-10:]
+        print np.argsort(two_array)[-10:]
+        print np.argsort(three_array)[-10:]
+        print np.argsort(four_array)[-10:]
+        print np.argsort(five_array)[-10:]
 
 if __name__ == '__main__':
     findNearest = FindNearestSentiment()
