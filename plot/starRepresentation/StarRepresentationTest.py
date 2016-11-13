@@ -74,7 +74,6 @@ class StarRepresentationTest:
         dishes_regex = self.get_clean_menu()
 
         for i in xrange(len(dishes_regex)):
-            #dishes_regex[i] = dishes_regex[i].replace("-","\-").encode('utf-8').lower()
 
             dishes_regex[i] = dishes_regex[i].lower()
             dishes_regex[i] = dishes_regex[i].split()
@@ -166,10 +165,10 @@ class StarRepresentationTest:
 
             text = text.replace("\'"," ")
 
-            #FIXME Remove accents
+            #Remove accents
             text = unicodedata.normalize('NFKD', text).encode('ASCII', 'ignore')
 
-            #FIXME porterStemmer # but may lose information
+            #porterStemmer # but may lose information
 
             text = re.sub("(\\n)+", r" ", text)
             text = re.sub("(\s)+", r" ", text)

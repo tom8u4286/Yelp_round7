@@ -42,25 +42,29 @@ class FindNearestSentiment:
         four = unique_words.index("4star")
         five = unique_words.index("5star")
 
-        print "start putting np-array"
+        print "start caculate np-array"
         A = np.array(vec)
         cos_array = 1-pairwise_distances(A, metric="cosine")
 
-        one_array = cos_array[one]
-        two_array = cos_array[two]
-        three_array = cos_array[three]
-        four_array = cos_array[four]
-        five_array = cos_array[five]
+        one_array = cos_array[one].tolist()
+        one_sorted_index = sorted(range(len(one_array)), key=lambda k:one_array[k])[::-1][:10]
 
-        print np.argsort(one_array)[-10:]
-        print np.sort(one_array[-10:])
-        print np.argsort(two_array)[-10:]
-        print np.sort(one_array[-10:])
-        print np.argsort(three_array)[-10:]
-        print np.sort(one_array[-10:])
-        print np.argsort(four_array)[-10:]
-        print np.sort(one_array[-10:])
-        print np.argsort(five_array)[-10:]
+        for index in one_sorted_index:
+            print unique_words[index]
+
+        #for index in one_sorted_index:
+        #    print unique_words[index]
+
+        #two_array = cos_array[two]
+        #three_array = cos_array[three]
+        #four_array = cos_array[four]
+        #five_array = cos_array[five]
+        #print one_array
+
+        #print np.argmax(one_array)
+        #print np.sort(one_array[10:])
+        #print np.amax(one_array)
+
 
 if __name__ == '__main__':
     findNearest = FindNearestSentiment()
