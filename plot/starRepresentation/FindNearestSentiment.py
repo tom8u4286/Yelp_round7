@@ -68,7 +68,7 @@ class FindNearestSentiment:
             dic["nearest"] = word_lists[i]
             dic_list.append(dic)
 
-        f = open('nearest_word.json','w+')
+        f = open('Nearest_word.json','w+')
         f.write(json.dump(dic_list, indent=4))
 
 if __name__ == '__main__':
