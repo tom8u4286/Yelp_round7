@@ -59,7 +59,7 @@ class StarRepresentationTest:
         for dish in menu:
             dish = re.sub("\(.*\)", "", dish)
             dish = dish.replace("(","").replace(")","")
-            dish = dish.replace("&", "and").replace("\'", "").replace("*","").replace("-"," ")
+            dish = dish.replace("&", "").replace("\'", "").replace("*","").replace("-"," ")
             dish = re.sub("(\s)+", " ", dish)
             dish = dish.strip()
             dish = re.sub("(!|@|#|\$|%|\^|\*\:|\;|\.|\,|\"|\'|\\|\/)", r'', dish)
@@ -77,10 +77,10 @@ class StarRepresentationTest:
 
             dishes_regex[i] = dishes_regex[i].lower()
             dishes_regex[i] = dishes_regex[i].split()
-            dishes_regex[i][0]= "(\s" + dishes_regex[i][0] # adding '(' before the first word
+            dishes_regex[i][0]= "(\s+" + dishes_regex[i][0] # adding '(' before the first word
 
             for word in xrange(len(dishes_regex[i])-1):
-                dishes_regex[i][word] = "\\s+"+dishes_regex[i][word]+"\\s*"
+                dishes_regex[i][word] = dishes_regex[i][word]+"\\s*"
 
             for word in xrange(len(dishes_regex[i])-2):
                 dishes_regex[i][word] += "|"
@@ -238,6 +238,7 @@ class StarRepresentationTest:
         dishes_regex = self.get_dishes_regex()
         dishes_ar = self.get_dishes_ar()
 
+
         if self.switch:
             print "\n" + "-"*70
             print "Processing backend_reviews"
@@ -248,8 +249,14 @@ class StarRepresentationTest:
             for j in xrange(len(dishes_regex)):
                 backend_reviews[i]["text"] = backend_reviews[i]["text"].lower()
                 """ Replacement | E.g. I love country pate. -> I love housemade-country-pate_mon-ami-gabi. """
+
+                #one = backend_reviews[i]["text"]
+
                 backend_reviews[i]["text"] = re.sub(dishes_regex[j], str(backend_reviews[i]["review_stars"])+"star", backend_reviews[i]["text"], flags = re.IGNORECASE)
                 backend_reviews[i]["text"] = re.sub("(\s)+", r" ", backend_reviews[i]["text"])
+
+                #if one != backend_reviews[i]["text"]:
+                #    print dishes_regex[j]
 
                 if self.switch:
                     sys.stdout.write("\rStatus: %s / %s | %s / %s"%(i+1, length1, j+1, length2))
