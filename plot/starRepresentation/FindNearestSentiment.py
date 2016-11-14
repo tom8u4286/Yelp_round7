@@ -33,38 +33,43 @@ class FindNearestSentiment:
 
         star_dic = {}
         unique_words = [line.rstrip('\n') for line in open(self.w)]
-        print "start putting vecs"
+        print "start putting vecs..."
         vec = [json.loads(line) for line in open(self.vec)]
 
-        one = unique_words.index("1star")
-        two = unique_words.index("2star")
-        three = unique_words.index("3star")
-        four = unique_words.index("4star")
-        five = unique_words.index("5star")
+        #one = unique_words.index("1star")
+        #two = unique_words.index("2star")
+        #three = unique_words.index("3star")
+        #four = unique_words.index("4star")
+        #five = unique_words.index("5star")
 
-        print "start caculate np-array"
+        starlist = ["1star", "2star", "3star", "4star", "5star"]
+        index_of_star_word = [unique_words.index(star) for star in starlist]
+
         A = np.array(vec)
         cos_array = 1-pairwise_distances(A, metric="cosine")
 
-        one_array = cos_array[one].tolist()
-        one_sorted_index = sorted(range(len(one_array)), key=lambda k:one_array[k])[::-1][:10]
+        word_lists = []
+        for index in index_of_star_word:
+            """Caculate the array of cosine distance of every unique word using np-array"""
+            print "start caculate np-array..."
 
-        for index in one_sorted_index:
-            print unique_words[index]
+            """find the vector of cosine distance of '1star' from the caculated array """
+            distance_vector = cos_array[index].tolist()
+            """Sort the vector of cosine distance of '1star' and find the index of nearest 10 words.(largest cosine similarity)"""
+            sorted_index = sorted(range(len(distance_vector)), key=lambda k:distance_vector[k])[::-1][:10]
 
-        #for index in one_sorted_index:
-        #    print unique_words[index]
+            word_list = [unique_words[word] for word in sorted_index]
+            word_lists.append(word_list)
 
-        #two_array = cos_array[two]
-        #three_array = cos_array[three]
-        #four_array = cos_array[four]
-        #five_array = cos_array[five]
-        #print one_array
+        dic_list = []
+        for i in range(len(starlist)):
+            dic = {}
+            dic["word"] = starlist[i]
+            dic["nearest"] = word_lists[i]
+            dic_list.append(dic)
 
-        #print np.argmax(one_array)
-        #print np.sort(one_array[10:])
-        #print np.amax(one_array)
-
+        f = open('nearest_word.json','w+')
+        f.write(json.dump(dic_list, indent=4))
 
 if __name__ == '__main__':
     findNearest = FindNearestSentiment()
