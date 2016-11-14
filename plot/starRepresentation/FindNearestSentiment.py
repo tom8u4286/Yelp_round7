@@ -48,15 +48,15 @@ class FindNearestSentiment:
         A = np.array(vec)
         cos_array = 1-pairwise_distances(A, metric="cosine")
 
+        print "start caculate np-array and finding nearest..."
         word_lists = []
         for index in index_of_star_word:
             """Caculate the array of cosine distance of every unique word using np-array"""
-            print "start caculate np-array..."
 
             """find the vector of cosine distance of '1star' from the caculated array """
             distance_vector = cos_array[index].tolist()
             """Sort the vector of cosine distance of '1star' and find the index of nearest 10 words.(largest cosine similarity)"""
-            sorted_index = sorted(range(len(distance_vector)), key=lambda k:distance_vector[k])[::-1][:10]
+            sorted_index = sorted(range(len(distance_vector)), key=lambda k:distance_vector[k])[::-1][:30]
 
             word_list = [unique_words[word] for word in sorted_index]
             word_lists.append(word_list)
@@ -70,6 +70,8 @@ class FindNearestSentiment:
 
         f = open('Nearest_word.json','w+')
         f.write(json.dumps(dic_list, indent=4))
+
+        print "FindNearestSentiment.py is done."
 
 if __name__ == '__main__':
     findNearest = FindNearestSentiment()
