@@ -252,7 +252,7 @@ class StarRepresentationTest:
 
                 #one = backend_reviews[i]["text"]
 
-                backend_reviews[i]["text"] = re.sub(dishes_regex[j], str(backend_reviews[i]["review_stars"])+"star", backend_reviews[i]["text"], flags = re.IGNORECASE)
+                backend_reviews[i]["text"] = re.sub(dishes_regex[j], " "+str(backend_reviews[i]["review_stars"])+"star", backend_reviews[i]["text"], flags = re.IGNORECASE)
                 backend_reviews[i]["text"] = re.sub("(\s)+", r" ", backend_reviews[i]["text"])
 
                 #if one != backend_reviews[i]["text"]:
