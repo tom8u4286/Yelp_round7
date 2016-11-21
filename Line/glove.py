@@ -1,5 +1,6 @@
 #!/usr/bin/env python
-
+import re
+import sys
 from argparse import ArgumentParser
 import codecs
 from collections import Counter
@@ -365,11 +366,12 @@ def main(arguments):
     vocab = get_or_build(arguments.vocab_path, build_vocab, corpus)
     logger.info("Vocab has %i elements.\n", len(vocab))
 
+    m = re.search('[0-9]+', sys.argv[1])
     inv_vocab={}
-    #with open('../data/line-data/.txt', 'w') as fp:
-    #    for key, value in vocab.items():
-    #         fp.write('%s %s\n' % (value[0], key))
-    #         inv_vocab[value[0]]=key
+    with open('../data/line-data/voc/restaurant_%s_voc.txt'%m.group(0), 'w') as fp:
+        for key, value in vocab.items():
+             fp.write('%s %s\n' % (value[0], key))
+             inv_vocab[value[0]]=key
 
     #print inv_vocab
 
@@ -379,7 +381,8 @@ def main(arguments):
                                  build_cooccur, vocab, corpus,
                                  window_size=arguments.window_size,
                                  min_count=arguments.min_count)
-    with open('../data/line-data/cooccurrence/coocur_%s.txt'%self.src, 'w') as fp:
+
+    with open('../data/line-data/cooccurrence/restaurant_%s_cooccur.txt'%m.group(0), 'w') as fp:
         fp.write('\n'.join('%s %s %s' % (inv_vocab[x[0]], inv_vocab[x[1]], x[2]) for x in cooccurrences))
     #logger.info("Cooccurrence list fetch complete (%i pairs).\n",
     #             len(cooccurrences))
@@ -398,10 +401,6 @@ def main(arguments):
 
     ## TODO shave off bias values, do something with context vectors
     #save_model(W, arguments.vector_path)
-
-def __init__(self):
-    print "Processing ", sys.argv[1]
-    self.src = sys.argv[1]
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.DEBUG,
