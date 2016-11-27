@@ -358,7 +358,7 @@ void Output()
 {
 	FILE *fo = fopen(embedding_file, "wb");
 	fprintf(fo, "%d %d\n", num_vertices, dim);
-	for (int a = 0; a < num_vertices; a++)
+	for (int a = 1; a < num_vertices; a++)
 	{
 		fprintf(fo, "%s ", vertex[a].name);
 		if (is_binary) for (int b = 0; b < dim; b++) fwrite(&emb_vertex[a * dim + b], sizeof(real), 1, fo);
