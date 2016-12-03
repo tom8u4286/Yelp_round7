@@ -6,7 +6,7 @@ import json
 import uuid
 import re
 
-class CaculateMatrix:
+class CalculateMatrix:
 
     def __init__(self):
         self.src = sys.argv[1]
@@ -28,8 +28,8 @@ class CaculateMatrix:
         A = np.array(self.dim200)
         similarities = cosine_similarity(A)
         self.cosine_matrix = similarities.tolist()
+        print "length of matrix: ",len(self.cosine_matrix), ", ", len(self.cosine_matrix[0])
         self.cosine_matrix = [NoIndent(vector) for vector in self.cosine_matrix]
-        print "length of matrix:",len(self.cosine_matrix)
 
         self.dot_matrix = A.dot(A.T).tolist()
         self.dot_matrix = [NoIndent(vector) for vector in self.dot_matrix]
@@ -37,11 +37,11 @@ class CaculateMatrix:
     def render(self):
         filename = sys.argv[1].split("/")
         num = re.search("[0-9]+", filename[5])
-        f1 = open( "../data/line-data/cosine_matrix/restaruant_%s_cosine.json"%num.group(0), "w+")
+        f1 = open( "../data/line-data/cosine_matrix/restaurant_%s_cosine.json"%num.group(0), "w+")
         f1.write(json.dumps( self.cosine_matrix, indent = 4, cls=NoIndentEncoder))
         f1.close()
 
-        f2 = open( "../data/line-data/dot_matrix/restaruant_%s_dot.json"%num.group(0), "w+")
+        f2 = open( "../data/line-data/dot_matrix/restaurant_%s_dot.json"%num.group(0), "w+")
         f2.write(json.dumps( self.dot_matrix, indent=4, cls=NoIndentEncoder))
         f2.close()
 
@@ -72,6 +72,6 @@ class NoIndentEncoder(json.JSONEncoder):
 
 
 if __name__ == '__main__':
-    matrix = CaculateMatrix()
+    matrix = CalculateMatrix()
     matrix.cosineMatrix()
     matrix.render()
