@@ -15,16 +15,17 @@ class CalculateMatrix:
         self.cosine_matrix = []
         self.dot_matrix = []
 
-    def cosineMatrix(self):
+    def matrix(self):
         f = self.source
 
-        "the first line of file is the unique word number and the dimenstion number. use the next() to skip it."
+        """the first line of file is the unique word number and the dimenstion number. use the next() to skip it."""
         next(f)
 
         for line in f:
             vector200 = [float(num) for num in line.split(" ")[1:-1]]
             self.dim200.append(vector200)
 
+        """calculate the cosine matrix"""
         A = np.array(self.dim200)
         similarities = cosine_similarity(A)
         self.cosine_matrix = similarities.tolist()
@@ -73,5 +74,5 @@ class NoIndentEncoder(json.JSONEncoder):
 
 if __name__ == '__main__':
     matrix = CalculateMatrix()
-    matrix.cosineMatrix()
+    matrix.matrix()
     matrix.render()
