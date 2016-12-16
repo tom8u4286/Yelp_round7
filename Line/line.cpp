@@ -26,7 +26,7 @@ Publication: Jian Tang, Meng Qu, Mingzhe Wang, Ming Zhang, Jun Yan, Qiaozhu Mei.
 #define NEG_SAMPLING_POWER 0.75
 
 const int hash_table_size = 30000000;
-const int neg_table_size = 1e8;
+const int neg_table_size = 1e9;
 const int sigmoid_table_size = 1000;
 
 typedef float real;                    // Precision of float numbers
