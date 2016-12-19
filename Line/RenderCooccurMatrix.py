@@ -70,7 +70,7 @@ class NoIndentEncoder(json.JSONEncoder):
         result = super(NoIndentEncoder, self).encode(o)
         for k, v in self._replacement_map.iteritems():
             result = result.replace('"@@%s@@"' % (k,), v)
-        return result
+            return result
 
 if __name__ == '__main__':
     renderCooccur = RenderCooccurMatrix()
