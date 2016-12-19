@@ -1,7 +1,0 @@
-a b 1
-a c 2
-a d 3
-b c 4
-b d 5
-c d 6
-d d 7

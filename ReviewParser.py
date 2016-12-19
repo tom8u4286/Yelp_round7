@@ -2,8 +2,10 @@
 import sys, re, json, os, uuid, itertools
 from operator import itemgetter
 from collections import OrderedDict
-import SpellingChecker #self defined
+#import SpellingChecker #self defined
 import unicodedata
+from nltk.corpus import stopwords
+from nltk.stem.snowball import SnowballStemmer
 
 class ReviewParser:
     """ This program aims to transform restaurant_*.json into
@@ -45,15 +47,12 @@ class ReviewParser:
 
     def get_lexicon(self):
         """ return p_list containing dictionaries of positive words """
+        """12/17/2016 Tom change the lexicon to stanfer lexicon. positive"""
 
-        positive_list = []
-        with open('data/lexicon/lexicon.json') as f:
-            lexicon = json.load(f)
-            for word_dict in lexicon:
-                positive_list.append(word_dict["word"])
+        with open('data/lexicon/stanfer/positive.txt') as f:
+            pos_list = [word.strip("\n") for word in f]
 
-        #print positive_list
-        return positive_list
+        return pos_list
 
     def get_clean_menu(self):
         """ get menu from business_list and return a clean menu"""
@@ -78,7 +77,6 @@ class ReviewParser:
         dishes_regex = self.get_clean_menu()
 
         for i in xrange(len(dishes_regex)):
-            #dishes_regex[i] = dishes_regex[i].replace("-","\-").encode('utf-8').lower()
 
             dishes_regex[i] = dishes_regex[i].lower()
             dishes_regex[i] = dishes_regex[i].split()
@@ -237,10 +235,67 @@ class ReviewParser:
 
         return frontend_review_dict_list
 
+    def add_senti(self,backend_reviews):
+        """2016/12/17 Tom added the function."""
+        print "Adding _senti after sentiment words.... "
+        pos_list = self.get_lexicon()
+        words_length = len(pos_list)
+        review_list = backend_reviews
+        review_list_length = len(backend_reviews)
+        matched_cnt = 0
+        review_cnt = 0
+        new_reviews_list = []
+        for review in review_list:
+            review_cnt += 1
+            new_review = review
+            word_cnt = 0
+            for word in pos_list:
+                word_cnt += 1
+                word_senti = " "+word+"_senti "
+                if "_" in word:
+                    word = word.replace("_", " ")
+                    word = " "+ word+ " "
+                elif "-" in word:
+                    word = word.replace("-", " ")
+                    word = " "+ word+ " "
+                else:
+                    word = " "+ word+ " "
+
+                if word in review:
+                    new_review = new_review.replace( word, word_senti)
+                    matched_cnt += 1
+                sys.stdout.write("\rtotally matched: %s, reviews: %s / %s, uni_words: %s / %s  "%(matched_cnt, review_cnt, review_list_length, word_cnt, words_length))
+            new_reviews_list.append(new_review)
+        return new_reviews_list
+
+    def stem_and_remove_stopwords(self, backend_reviews):
+        """2016/12/17 Tom added the function."""
+        stop_words = set(stopwords.words('english'))
+        stemmer = SnowballStemmer('english')
+        length = len(backend_reviews)
+        print "Removing stopwords..."
+        new_reviews_list = []
+        review_cnt = 0
+        for review in backend_reviews:
+            review_cnt += 1
+            word_tokens = review.split(" ")
+            """remove stop words"""
+            filtered_sentence = [w for w in word_tokens if not w in stop_words]
+            """stemming"""
+            filtered_sentence = [stemmer.stem(w) for w in filtered_sentence]
+            """join back the review from a list to a string"""
+            new_review = " ".join(filtered_sentence)
+            new_reviews_list.append(new_review)
+            sys.stdout.write("reviews: %s / %s"%(review_cnt, length))
+
+        return new_reviews_list
+
     def get_backend_reviews(self):
         """ match the dishes in the reviews with dishes_regex and replace them with the dishes in dishes_ar  """
-
+        """2016/12/17 Tom added the '_senti' after sentiment words , stopwords and stemmer. """
         backend_reviews = list(self.clean_reviews)
+        backend_reviews = self.add_senti(backend_reviews)
+        backend_reviews = self.stem_and_remove_stopwords(backend_reviews)
         dishes_regex = self.get_dishes_regex()
         dishes_ar = self.get_dishes_ar()
 
@@ -415,13 +470,13 @@ class ReviewParser:
 
         print sys.argv[1], "'s frontend json is completed"
 
-        """ (2) render restaurant_*.json in ./backend_reviews """
+        """ (2) render restaurant_*.txt in ./backend_reviews """
         backend_txt = open("data/backend_reviews/restaurant_%s.txt"%(filename), "w+")
         for review in self.backend_reviews:
             backend_txt.write(review.encode("utf-8") + '\n')
         backend_txt.close()
 
-        print sys.argv[1], "'s backend json is completed"
+        print sys.argv[1], "'s backend txt is completed"
 
         """ (3) render restaurant_dict, in which menu is transformded from a list to a detailed dictionary """
 

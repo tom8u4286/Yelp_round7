@@ -45,7 +45,7 @@ def parse_args():
                                  'loaded from the file. If it does not '
                                  'exist, the matrix will be written to '
                                  'this file.'))
-    g_cooccur.add_argument('-w', '--window-size', type=int, default=10,
+    g_cooccur.add_argument('-w', '--window-size', type=int, default=3,
                            help=('Number of context words to track to '
                                  'left and right of each word'))
     g_cooccur.add_argument('--min-count', type=int, default=5,
