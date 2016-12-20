@@ -39,8 +39,8 @@ class Plot:
 
         matplotlib.rcParams['axes.unicode_minus'] = False
         fig, ax = plt.subplots()
-        ax.set_xlim( -1, 1)
-        ax.set_ylim( -1, 1)
+        #ax.set_xlim( -1, 1)
+        #ax.set_ylim( -1, 1)
 
         for item in testing_list:
             vec = self.get_vec2(item)
