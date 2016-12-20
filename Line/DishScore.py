@@ -4,6 +4,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 import re
 from collections import OrderedDict
 
+
 class DishScore:
 
     def __init__(self):
