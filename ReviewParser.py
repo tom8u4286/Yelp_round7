@@ -24,7 +24,9 @@ class ReviewParser:
         self.frontend_reviews = []
         self.clean_reviews = []
 
-        self.switch = 0
+        self.filename = ""
+
+        self.switch = 1
 
     def get_review_dict(self):
         #print "Loading data from", self.src
@@ -139,7 +141,7 @@ class ReviewParser:
         raw_reviews = self.get_review_dict()["reviews"]
 
         if self.switch:
-            print "Cleaning reviews"
+            print "\nCleaning reviews"
 
         cnt = 0
         length = len(raw_reviews)
@@ -150,11 +152,11 @@ class ReviewParser:
 
             text = re.sub(r'https?:\/\/.*[\r\n]*', ' ', text, flags=re.MULTILINE)
             #text = ' '.join(re.findall('[A-Z][^A-Z]*', text)) # ThisIsAwesome -> This Is Awesome
-            text = text.replace("!"," ! ").replace("@"," @ ").replace("#"," # ").replace("$"," $ ").replace("%"," % ")
-            text = text.replace("^"," ^ ").replace("&"," & ").replace("*"," * ").replace("("," ( ").replace(")"," ) ")
-            text = text.replace(":"," : ").replace(";"," ; ").replace("."," . ").replace(","," , ").replace("=", " = ")
-            text = text.replace("+"," + ").replace("-"," - ").replace("|"," | ").replace("\\"," \ ").replace("/"," / ")
-            text = text.replace("~"," ~ ").replace("_", "").replace(">"," > ").replace("<", " < ").replace("?", " ? ")
+            text = text.replace("!","").replace("@","").replace("#","").replace("$","").replace("%","")
+            text = text.replace("^","").replace("&","").replace("*","").replace("(","").replace(")","")
+            text = text.replace(":","").replace(";","").replace(".","").replace(",","").replace("=", "")
+            text = text.replace("+","").replace("-","").replace("|","").replace("\\","").replace("/","")
+            text = text.replace("~","").replace("_", "").replace(">","").replace("<", "").replace("?", "")
             text = text.replace("\""," ").replace("[","").replace("]","").replace("{","").replace("}","")
 
             #text = re.sub("(!|@|#|\$|%|\^|\&|\*|\(|\)|\:|\;|\.|\,|\?|\")", r' \1 ', text)
@@ -181,10 +183,11 @@ class ReviewParser:
             #text = ' '.join(SpellingChecker.correction(word) for word in text.split())
             clean_reviews.append(text)
 
-            if self.switch:
-                sys.stdout.write("\rStatus: %s / %s"%(cnt, length))
-                sys.stdout.flush()
+            #if self.switch:
+            sys.stdout.write("\rStatus: %s / %s"%(cnt, length))
+            sys.stdout.flush()
 
+        print "clean_reviews complete...length of clean ", len(clean_reviews)
         return clean_reviews
 
     def get_frontend_review_dict_list(self):
@@ -236,8 +239,9 @@ class ReviewParser:
         return frontend_review_dict_list
 
     def add_senti(self,backend_reviews):
-        """2016/12/17 Tom added the function."""
-        print "Adding _senti after sentiment words.... "
+        """2016/12/17 Tom added the function.(the sentiment would be stemmed.)"""
+        print "\nAdding _senti after stemmed sentiment words.... "
+        stemmer = SnowballStemmer('english')
         pos_list = self.get_lexicon()
         words_length = len(pos_list)
         review_list = backend_reviews
@@ -245,35 +249,66 @@ class ReviewParser:
         matched_cnt = 0
         review_cnt = 0
         new_reviews_list = []
+        senti_list = []
         for review in review_list:
             review_cnt += 1
-            new_review = review
+            new_review = " "+review+" "
             word_cnt = 0
+            tmp = []
+            tmp.append(review_cnt)
             for word in pos_list:
                 word_cnt += 1
-                word_senti = " "+word+"_senti "
-                if "_" in word:
-                    word = word.replace("_", " ")
-                    word = " "+ word+ " "
-                elif "-" in word:
-                    word = word.replace("-", " ")
-                    word = " "+ word+ " "
+                if "-" or "_" in word:
+                    word = word.replace("-","=")
+                    word = word.replace("_","=")
+                    word = word.split("=")
+                    word = [stemmer.stem(w) for w in word]
+                    word = " ".join(word)
                 else:
-                    word = " "+ word+ " "
+                    word = stemmer.stem(w)
 
-                if word in review:
-                    new_review = new_review.replace( word, word_senti)
+                word_senti = word.replace(" ","-")+"_senti"
+                if word+" " in review:
+                    tmp.append(word+" "+word_senti)
+                    new_review = new_review.replace(" "+word+" ", " "+word_senti+" ",5)
                     matched_cnt += 1
-                sys.stdout.write("\rtotally matched: %s, reviews: %s / %s, uni_words: %s / %s  "%(matched_cnt, review_cnt, review_list_length, word_cnt, words_length))
-            new_reviews_list.append(new_review)
+                sys.stdout.write("\rtotally matched: %s, reviews: %s / %s, senti_words: %s / %s  "%(matched_cnt, review_cnt, review_list_length, word_cnt, words_length))
+                sys.stdout.flush()
+            new_reviews_list.append(new_review.strip())
+            senti_list.append(tmp)
+        f = open("senti.txt", "w+")
+        f.write(json.dumps(senti_list, indent = 4))
+        f.close()
         return new_reviews_list
 
-    def stem_and_remove_stopwords(self, backend_reviews):
+    def stem(self, backend_reviews):
         """2016/12/17 Tom added the function."""
-        stop_words = set(stopwords.words('english'))
+        #stop_words = set(stopwords.words('english'))
         stemmer = SnowballStemmer('english')
         length = len(backend_reviews)
-        print "Removing stopwords..."
+        print "\nStemming backend reviews...."
+        new_reviews_list = []
+        review_cnt = 0
+        for review in backend_reviews:
+            review_cnt += 1
+            word_tokens = review.split(" ")
+            #"""remove stop words"""
+            #filtered_sentence = [w for w in word_tokens if not w in stop_words]
+            """stemming"""
+            filtered_sentence = [stemmer.stem(w) for w in word_tokens]
+            """join back the review from a list to a string"""
+            new_review = " ".join(filtered_sentence)
+            new_reviews_list.append(new_review)
+            sys.stdout.write("\rreviews: %s / %s"%(review_cnt, length))
+            sys.stdout.flush()
+
+        return new_reviews_list
+
+    def remove_stopwords(self, backend_reviews):
+        """2016/12/22 Tom added the function."""
+        stop_words = set(stopwords.words('english'))
+        length = len(backend_reviews)
+        print "\nRemoving stopwords..."
         new_reviews_list = []
         review_cnt = 0
         for review in backend_reviews:
@@ -281,12 +316,11 @@ class ReviewParser:
             word_tokens = review.split(" ")
             """remove stop words"""
             filtered_sentence = [w for w in word_tokens if not w in stop_words]
-            """stemming"""
-            filtered_sentence = [stemmer.stem(w) for w in filtered_sentence]
             """join back the review from a list to a string"""
             new_review = " ".join(filtered_sentence)
             new_reviews_list.append(new_review)
-            sys.stdout.write("reviews: %s / %s"%(review_cnt, length))
+            sys.stdout.write("\rreviews: %s / %s    "%(review_cnt, length))
+            sys.stdout.flush()
 
         return new_reviews_list
 
@@ -294,8 +328,7 @@ class ReviewParser:
         """ match the dishes in the reviews with dishes_regex and replace them with the dishes in dishes_ar  """
         """2016/12/17 Tom added the '_senti' after sentiment words , stopwords and stemmer. """
         backend_reviews = list(self.clean_reviews)
-        backend_reviews = self.add_senti(backend_reviews)
-        backend_reviews = self.stem_and_remove_stopwords(backend_reviews)
+        print "\nlength of self.clean_reviews: ", len(backend_reviews)
         dishes_regex = self.get_dishes_regex()
         dishes_ar = self.get_dishes_ar()
 
@@ -313,9 +346,17 @@ class ReviewParser:
                 backend_reviews[i] = re.sub("(\s)+", r" ", backend_reviews[i])
 
                 if self.switch:
-                    sys.stdout.write("\rStatus: %s / %s | %s / %s"%(i+1, length1, j+1, length2))
+                    sys.stdout.write("\rStatus: %s / %s | %s / %s    "%(i+1, length1, j+1, length2))
                     sys.stdout.flush()
 
+        backend_reviews = self.stem(backend_reviews)
+        print "\nlength of self.backend_reviews stemmed: ", len(backend_reviews)
+        backend_reviews = self.add_senti(backend_reviews)
+        print "\nlength of backend_reviews add_senti: ", len(backend_reviews)
+        backend_reviews = self.remove_stopwords(backend_reviews)
+        print "\nlength of backend_reviews remove_stopwords: ",len(backend_reviews)
+
+        print "get_backend_reviews complete... the length of backend_review:", len(backend_reviews)
         return backend_reviews
 
     def get_restaurant_dict(self):
@@ -420,28 +461,7 @@ class ReviewParser:
         if not os.path.exists(dir4):
             os.makedirs(dir4)
 
-    def render(self):
-        """ render frontend_review & backend_reviews & restaurant_list """
-        business = self.get_business()
-        #self.menu = self.get_clean_menu()
-        self.clean_reviews = self.get_clean_reviews()
-        self.frontend_review_dict_list = self.get_frontend_review_dict_list()
-        self.backend_reviews = self.get_backend_reviews()
-
-        restaurant_dict = self.get_restaurant_dict()
-        sentiment_statistics = self.get_statistics()
-
-        self.create_dirs()
-
-        if self.switch:
-            print "\n" + "-"*70
-            print "Rendering"
-
-        filename = sys.argv[1][24]
-        if sys.argv[1][25] != ".":
-            filename = filename + sys.argv[1][25]
-            if sys.argv[1][26] != ".":
-                filename = filename + sys.argv[1][26]
+    def render_frontend_reviews(self):
 
         total_review_count = len(self.clean_reviews)
         """ (1) render restaurant_*.json in ./frontend_reviews """
@@ -464,19 +484,22 @@ class ReviewParser:
 
         orderedDict1["dish_reviews"] = ordered_frontend_review_dict_list
 
-        frontend_json = open("data/frontend_reviews/restaurant_%s.json"%(filename), "w+")
+        frontend_json = open("data/frontend_reviews/restaurant_%s.json"%(self.filename), "w+")
         frontend_json.write(json.dumps( orderedDict1, indent = 4))
         frontend_json.close()
 
         print sys.argv[1], "'s frontend json is completed"
 
+    def render_backend_reviews(self):
         """ (2) render restaurant_*.txt in ./backend_reviews """
-        backend_txt = open("data/backend_reviews/restaurant_%s.txt"%(filename), "w+")
+        backend_txt = open("data/backend_reviews/restaurant_%s.txt"%(self.filename), "w+")
         for review in self.backend_reviews:
             backend_txt.write(review.encode("utf-8") + '\n')
         backend_txt.close()
 
         print sys.argv[1], "'s backend txt is completed"
+
+    def render_restaurant_dict(self):
 
         """ (3) render restaurant_dict, in which menu is transformded from a list to a detailed dictionary """
 
@@ -490,19 +513,62 @@ class ReviewParser:
 
         #dish_list = sorted(dish_list, key=lambda k: k['count'])
 
-        restaurant_json = open("data/restaurant_dict_list/restaurant_dict_%s.json"%(filename), "w+")
+        restaurant_json = open("data/restaurant_dict_list/restaurant_dict_%s.json"%(self.filename), "w+")
         restaurant_json.write(json.dumps( orderedDict2, indent = 4, cls=NoIndentEncoder))
         restaurant_json.close()
 
         print sys.argv[1], "'s restaurant_dic json is completed"
 
+    def render_sentiment_statistics(self):
         """ (4) render restaurant.json containing dictionaries of each positive sentiment word """
 
-        restaurant_json = open("data/sentiment_statistics/restaurant_%s.json"%(filename), "w+")
+        restaurant_json = open("data/sentiment_statistics/restaurant_%s.json"%(self.filename), "w+")
         restaurant_json.write(json.dumps(sentiment_statistics, indent = 4, cls=NoIndentEncoder))
         restaurant_json.close()
 
         print sys.argv[1], "'s sentiment analysis is completed"
+
+    def render_compare_file(self):
+        """ (5) render compare json file."""
+        """12/23 Tom added."""
+        compare_file = open("restaurant_comapre.json","w+")
+        lst = []
+        for idx, review in enumerate(self.clean_reviews):
+            orderedDict3 = OrderedDict()
+            orderedDict3["origin"] = review
+            orderedDict3["new"] = self.backend_reviews[idx]
+            lst.append(orderedDict3)
+        compare_file.write(json.dumps(lst, indent = 4))
+        print sys.argv[1], "'s compare file is completed."
+
+    def render(self):
+        """ render frontend_review & backend_reviews & restaurant_list """
+        business = self.get_business()
+        self.menu = self.get_clean_menu()
+        self.clean_reviews = self.get_clean_reviews()
+        self.frontend_review_dict_list = self.get_frontend_review_dict_list()
+        self.backend_reviews = self.get_backend_reviews()
+
+        restaurant_dict = self.get_restaurant_dict()
+        sentiment_statistics = self.get_statistics()
+
+        self.create_dirs()
+
+        if self.switch:
+            print "\n" + "-"*70
+            print "Rendering"
+
+        self.filename = sys.argv[1][24]
+        if sys.argv[1][25] != ".":
+            self.filename = self.filename + sys.argv[1][25]
+            if sys.argv[1][26] != ".":
+                self.filename = self.filename + sys.argv[1][26]
+
+        #self.render_frontend_reviews()
+        self.render_backend_reviews()
+        #self.render_restaurant_dict_reviews()
+        #self.render_sentiment_statistics_reviews()
+        self.render_compare_file()
 
 class NoIndent(object):
     def __init__(self, value):
