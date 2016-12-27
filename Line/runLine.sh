@@ -6,7 +6,7 @@ do
     num=$(echo $filename | egrep -o "[0-9]+")
     echo $num
     #echo $filename
-    ts -n -f sh -c "./line -train $i -output ../data/line-data/vectors/200dim/restaurant_"$num"_vector200.txt -size 200 -order 1 -negative 5 -samples 1 -threads 1
+    ts -n -f sh -c "./line -train $i -output ../data/line-data/vectors/200dim/restaurant_"$num"_vector200.txt -size 200 -order 1 -negative 5 -samples 25 -threads 1
     ./normalize -input ../data/line-data/vectors/200dim/restaurant_"$num"_vector200.txt -output ../data/line-data/vectors/norm_200dim/norm_restaurant_"$num"_vector2.txt -binary 0
     #" 
     echo "-------------------------------------------"

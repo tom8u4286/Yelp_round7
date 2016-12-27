@@ -39,7 +39,7 @@ for line in f_coo:
     sys.stdout.write("\rStatus: %s / %s"%(cnt,total))
     sys.stdout.flush()
 coo_matrix = coo_matrix.flatten()
-print "coo_matrix size: ",coo_matrix.size
+print "\ncoo_matrix size: ",coo_matrix.size
 #print coo_matrix[words.index("scold")][words.index("manner")]
 """test matrix"""
 #test_words = ["apple","pineapple","orange"]
