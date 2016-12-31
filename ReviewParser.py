@@ -25,6 +25,7 @@ class ReviewParser:
         self.clean_reviews = []
 
         self.filename = ""
+        self.restaurant_name = ""
 
         self.switch = 1
 
@@ -102,6 +103,7 @@ class ReviewParser:
         #dishes_ar = self.get_business()['menu']
         dishes_ar = self.get_clean_menu()
         restaurant_name = self.get_business()['business_name']
+        self.restaurant_name = restaurant_name
 
         for i in xrange(len(dishes_ar)):
             dishes_ar[i] = dishes_ar[i].replace(" ", "-") + "_" + restaurant_name.replace(" ", "-")
@@ -386,6 +388,14 @@ class ReviewParser:
                 sys.stdout.write("\rStatus: %s / %s"%(cnt, length))
                 sys.stdout.flush()
 
+        """counting the avg_word per review."""
+        review_avg_words = sum([len(review.split(" ")) for review in self.backend_reviews])/len(self.backend_reviews)
+        business["avg_words_per_review"] = review_avg_words
+
+        """counting the average lenght of sentiment words and dish words."""
+        business["dish_senti_avg_lenght"] = self.count_senti_lenght()
+
+
         menu = self.get_clean_menu()
         """ sorted by count """
         i = 0
@@ -499,8 +509,9 @@ class ReviewParser:
 
         print sys.argv[1], "'s backend txt is completed"
 
-    def render_restaurant_dict(self):
+    def render_restaurant_dict(self, restaurant_dict):
 
+        total_review_count = len(self.backend_reviews)
         """ (3) render restaurant_dict, in which menu is transformded from a list to a detailed dictionary """
 
         orderedDict2 = OrderedDict()
@@ -508,7 +519,9 @@ class ReviewParser:
         orderedDict2["restaurant_id"] = restaurant_dict["business_id"]
         orderedDict2["stars"] = restaurant_dict["stars"]
         orderedDict2["review_count"] = total_review_count
+        orderedDict2["avg_word_count_pre_review"] = restaurant_dict["avg_words_per_review"]
         orderedDict2["menu_length"] = restaurant_dict["menu_length"]
+        orderedDict2["dish_senti_avg_len"] = restaurant_dict["dish_senti_avg_lenght"]
         orderedDict2["menu"] = restaurant_dict["menu"]
 
         #dish_list = sorted(dish_list, key=lambda k: k['count'])
@@ -541,12 +554,47 @@ class ReviewParser:
         compare_file.write(json.dumps(lst, indent = 4))
         print sys.argv[1], "'s compare file is completed."
 
+    def count_senti_lenght(self):
+        """12/29 Tom added."""
+
+        length_list = []
+        err_cnt = 0
+        tmp_list = []
+        for review in self.backend_reviews:
+
+            if "_senti" in review:
+                review = review.split(" ")
+                dish_idx = []
+                restaurant_name = self.restaurant_name.lower().replace(" ","-")
+                for idx, word in enumerate(review):
+                    if restaurant_name in word:
+                        dish_idx.append(idx)
+
+                if len(dish_idx) > 0:
+                    for idx in dish_idx:
+                        cnt = 1
+                        while True:
+                            if idx+cnt < len(review):
+                                if "_senti" in review[idx+cnt]:
+                                    length_list.append(cnt)
+                                    break
+                            elif idx-cnt > 0:
+                                if "_senti" in review[idx-cnt]:
+                                    length_list.append(cnt)
+                                    break
+                            elif idx+cnt > len(review) and idx-cnt < 0:
+                                break
+                            cnt+=1
+        avg_length = float(sum(length_list))/float(len(length_list))
+
+        return avg_length
+
     def render(self):
         """ render frontend_review & backend_reviews & restaurant_list """
         business = self.get_business()
         self.menu = self.get_clean_menu()
         self.clean_reviews = self.get_clean_reviews()
-        self.frontend_review_dict_list = self.get_frontend_review_dict_list()
+        #self.frontend_review_dict_list = self.get_frontend_review_dict_list()
         self.backend_reviews = self.get_backend_reviews()
 
         restaurant_dict = self.get_restaurant_dict()
@@ -566,7 +614,7 @@ class ReviewParser:
 
         #self.render_frontend_reviews()
         self.render_backend_reviews()
-        #self.render_restaurant_dict_reviews()
+        self.render_restaurant_dict(restaurant_dict)
         #self.render_sentiment_statistics_reviews()
         self.render_compare_file()
 
