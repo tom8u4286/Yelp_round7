@@ -27,10 +27,11 @@ class ReviewParser:
         self.filename = ""
         self.restaurant_name = ""
 
+        self.senti_matched_cnt = 0
+
         self.switch = 1
 
     def get_review_dict(self):
-        #print "Loading data from", self.src
         with open(self.src) as f:
             review_dic = json.load(f)
 
@@ -50,7 +51,7 @@ class ReviewParser:
 
     def get_lexicon(self):
         """ return p_list containing dictionaries of positive words """
-        """12/17/2016 Tom change the lexicon to stanfer lexicon. positive"""
+        """ 12/17/2016 Tom change the lexicon to stanfer lexicon. positive"""
 
         with open('data/lexicon/stanfer/positive.txt') as f:
             pos_list = [word.strip("\n") for word in f]
@@ -95,12 +96,10 @@ class ReviewParser:
             dishes_regex[i] = "".join(dishes_regex[i])[:-1]
             dishes_regex[i] += "[a-z]+(s|es|ies)?"
 
-        #print dishes_regex
         return dishes_regex
 
     def get_dishes_ar(self):
         """ dishes_ar is the dish_list with every dish 'a'ppending 'r'estaurant_name E.g. dish_restaurant """
-        #dishes_ar = self.get_business()['menu']
         dishes_ar = self.get_clean_menu()
         restaurant_name = self.get_business()['business_name']
         self.restaurant_name = restaurant_name
@@ -110,13 +109,11 @@ class ReviewParser:
             dishes_ar[i] = re.sub("(\s)+", r" ", dishes_ar[i])
             dishes_ar[i] = dishes_ar[i].lower().replace("&", "and").replace("\'", "").replace(".", "").replace(",","")
 
-        #print dishes_ar
         return dishes_ar
 
     def get_marked_dishes(self):
         """ match the dishes in the reviews and mark the dish"""
         menu = self.get_clean_menu()
-        #dishes = self.get_business()["menu"]
         marked_dishes = []
 
         if self.switch:
@@ -127,7 +124,6 @@ class ReviewParser:
         length = len(menu)
         for dish in menu:
             cnt += 1
-            #dish = re.sub("(!|@|#|\$|%|\^|\&|\*\:|\;|\.|\,|\"|\')", r'', dish)
             dish = dish.lower().replace("&","and").replace("'","").replace(" ","-")
             marked_dishes.append(" <mark>" + dish + "</mark> ")
 
@@ -135,7 +131,6 @@ class ReviewParser:
                 sys.stdout.write("\rStatus: %s / %s"%(cnt, length))
                 sys.stdout.flush()
 
-        #print marked_dishes
         return marked_dishes
 
     def get_clean_reviews(self):
@@ -150,18 +145,14 @@ class ReviewParser:
         clean_reviews = []
         for text in raw_reviews:
             cnt += 1
-            #text = text.decode("utf-8").encode('ascii', 'ignore')
 
             text = re.sub(r'https?:\/\/.*[\r\n]*', ' ', text, flags=re.MULTILINE)
-            #text = ' '.join(re.findall('[A-Z][^A-Z]*', text)) # ThisIsAwesome -> This Is Awesome
             text = text.replace("!","").replace("@","").replace("#","").replace("$","").replace("%","")
             text = text.replace("^","").replace("&","").replace("*","").replace("(","").replace(")","")
             text = text.replace(":","").replace(";","").replace(".","").replace(",","").replace("=", "")
             text = text.replace("+","").replace("-","").replace("|","").replace("\\","").replace("/","")
             text = text.replace("~","").replace("_", "").replace(">","").replace("<", "").replace("?", "")
             text = text.replace("\""," ").replace("[","").replace("]","").replace("{","").replace("}","")
-
-            #text = re.sub("(!|@|#|\$|%|\^|\&|\*|\(|\)|\:|\;|\.|\,|\?|\")", r' \1 ', text)
 
             text = re.sub(r"'m", " am", text)
             text = re.sub(r"'re", " are", text)
@@ -182,10 +173,8 @@ class ReviewParser:
             text = re.sub("(\s)+", r" ", text)
 
             text = ''.join(''.join(s)[:2] for _, s in itertools.groupby(text)) # sooo happppppy -> so happy
-            #text = ' '.join(SpellingChecker.correction(word) for word in text.split())
             clean_reviews.append(text)
 
-            #if self.switch:
             sys.stdout.write("\rStatus: %s / %s"%(cnt, length))
             sys.stdout.flush()
 
@@ -251,13 +240,10 @@ class ReviewParser:
         matched_cnt = 0
         review_cnt = 0
         new_reviews_list = []
-        senti_list = []
         for review in review_list:
             review_cnt += 1
             new_review = " "+review+" "
             word_cnt = 0
-            tmp = []
-            tmp.append(review_cnt)
             for word in pos_list:
                 word_cnt += 1
                 if "-" or "_" in word:
@@ -271,16 +257,12 @@ class ReviewParser:
 
                 word_senti = word.replace(" ","-")+"_senti"
                 if word+" " in review:
-                    tmp.append(word+" "+word_senti)
                     new_review = new_review.replace(" "+word+" ", " "+word_senti+" ",5)
                     matched_cnt += 1
                 sys.stdout.write("\rtotally matched: %s, reviews: %s / %s, senti_words: %s / %s  "%(matched_cnt, review_cnt, review_list_length, word_cnt, words_length))
                 sys.stdout.flush()
             new_reviews_list.append(new_review.strip())
-            senti_list.append(tmp)
-        f = open("senti.txt", "w+")
-        f.write(json.dumps(senti_list, indent = 4))
-        f.close()
+        self.senti_matched_cnt = matched_cnt
         return new_reviews_list
 
     def stem(self, backend_reviews):
@@ -394,7 +376,6 @@ class ReviewParser:
 
         """counting the average lenght of sentiment words and dish words."""
         business["dish_senti_avg_lenght"] = self.count_senti_lenght()
-
 
         menu = self.get_clean_menu()
         """ sorted by count """
@@ -521,6 +502,7 @@ class ReviewParser:
         orderedDict2["review_count"] = total_review_count
         orderedDict2["avg_word_count_pre_review"] = restaurant_dict["avg_words_per_review"]
         orderedDict2["menu_length"] = restaurant_dict["menu_length"]
+        orderedDict2["senti_per_review"] = float(self.senti_matched_cnt) / float(total_review_count)
         orderedDict2["dish_senti_avg_len"] = restaurant_dict["dish_senti_avg_lenght"]
         orderedDict2["menu"] = restaurant_dict["menu"]
 
@@ -544,7 +526,7 @@ class ReviewParser:
     def render_compare_file(self):
         """ (5) render compare json file."""
         """12/23 Tom added."""
-        compare_file = open("restaurant_comapre.json","w+")
+        compare_file = open("data/backend_reviews/restaurant_%s_comapre.json"%(self.filename),"w+")
         lst = []
         for idx, review in enumerate(self.clean_reviews):
             orderedDict3 = OrderedDict()
